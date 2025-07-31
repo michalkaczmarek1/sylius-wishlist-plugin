@@ -1,0 +1,11 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% set prefixes = prefixes|default([])|merge(['sylius_shop.base']) %}
+{% set attrs = attrs|default([]) %}
+
+{% block content %}
+    <div class="container">
+        <h3 class="d-flex justify-content-center align-items-center mt-3">Wishlist products</h3>
+        {% hook 'main' with { _prefixes: prefixes, ...attrs } %}
+    </div>
+{% endblock %}

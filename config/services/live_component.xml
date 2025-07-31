@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+           https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="sylius_academy.wishlist_plugin.twig.component.wishlist.component"
+                 class="SyliusAcademy\WishlistPlugin\Twig\Component\WishlistComponent">
+            <argument type="service" id="sylius.repository.product" />
+            <argument type="service" id="sylius.repository.product_variant" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="sylius.resolver.product_variant.default" />
+            <argument type="service" id="sylius_academy.wishlist_plugin.provider.wishlist.provider" />
+            <argument type="service" id="sylius_academy.wishlist_plugin.provider.wishlist.token.provider" />
+            <argument type="service" id="sylius_academy_wishlist.repository.wishlist_product" />
+            <argument type="service" id="sylius_academy_wishlist.factory.wishlist_product" />
+            <tag name="sylius.live_component.shop" key="sylius_shop:product:wishlist" />
+        </service>
+    </services>
+</container>

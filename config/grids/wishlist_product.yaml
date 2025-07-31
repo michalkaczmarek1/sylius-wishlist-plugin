@@ -1,0 +1,70 @@
+sylius_grid:
+    templates:
+        action:
+            showProduct: '@SyliusAcademyWishlistPlugin/shop/wishlist/grid/action/show_product.html.twig'
+            addProductToCart: '@SyliusAcademyWishlistPlugin/shop/wishlist/grid/action/add_product_to_cart.html.twig'
+    grids:
+        sylius_shop_wishlist_product:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: "%sylius_academy_wishlist.model.wishlist_product.class%"
+                    repository:
+                        method: findByWishlistAndToken
+                        arguments:
+                            wishlist: expr:service('sylius_academy.wishlist_plugin.provider.wishlist.provider').provide()
+            sorting:
+                createdAt: desc
+            fields:
+                image:
+                    type: twig
+                    label: sylius_academy_wishlist_plugin.ui.image
+                    path: productVariant.product
+                    options:
+                        template: "@SyliusAcademyWishlistPlugin/shop/wishlist/grid/field/image.html.twig"
+                name:
+                    type: string
+                    label: sylius_academy_wishlist_plugin.ui.name
+                    path: productVariant
+                createdAt:
+                    type: datetime
+                    label: sylius_academy_wishlist_plugin.ui.created_at
+                    sortable: ~
+                updatedAt:
+                    type: datetime
+                    label: sylius_academy_wishlist_plugin.ui.updated_at
+                    sortable: ~
+            filters:
+                search:
+                    type: string
+                    options:
+                        fields: [ wishlist, productVariant ]
+                createdAt:
+                    type: date
+                    options:
+                        field: createdAt
+                        inclusive_to: true
+                updatedAt:
+                    type: date
+                    options:
+                        field: updatedAt
+                        inclusive_to: true
+            actions:
+                item:
+                    delete:
+                        type: delete
+                    showProduct:
+                        type: showProduct
+                        label: sylius_academy_wishlist_plugin.grid.action.show_product
+                        options:
+                            link:
+                                route: sylius_shop_product_show
+                                parameters:
+                                    slug: resource.productVariant.product.slug
+                    addProductToCart:
+                        type: addProductToCart
+                        options:
+                            link:
+                                route: sylius_academy_wishlist_shop_add_product_to_cart_from_wishlist
+                                parameters:
+                                    id: resource.productVariant.id

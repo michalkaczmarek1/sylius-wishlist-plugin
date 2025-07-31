@@ -1,0 +1,6 @@
+{% extends '@SyliusShop/account/common/index.html.twig' %}
+
+{% set prefixes = ['sylius_shop.account.wishlist_product'] %}
+{% set attrs = { resources } %}
+
+{% block title %}{{ 'sylius_academy_wishlist_plugin.menu.shop.account.wishlist_products_index'|trans }} | {{ parent() }}{% endblock %}

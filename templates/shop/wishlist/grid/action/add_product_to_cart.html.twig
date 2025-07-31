@@ -1,0 +1,13 @@
+{% set url = options.link.url|default(path(options.link.route)) %}
+{% set productVariantId = options.link.parameters['id'] %}
+
+<form action="{{ url }}" method="post">
+    <input type="hidden" value="{{ productVariantId }}" name="product_variant_id"/>
+    <label for="quantity">
+        <input type="number" min="1" value="1" name="quantity">
+    </label>
+    <button class="btn btn-warning btn-sm btn-icon w-full" type="submit">
+        {{ ux_icon('tabler:shopping-cart', {'class': 'icon'}) }}
+    </button>
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token(productVariantId) }}"/>
+</form>

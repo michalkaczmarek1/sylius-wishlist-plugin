@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+           https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="sylius_academy.wishlist_plugin.controller.add_to_cart_from_wishlist_action"
+                 class="SyliusAcademy\WishlistPlugin\Controller\Action\AddProductToCartFromWishlistAction">
+            <argument type="service" id="messenger.default_bus" />
+            <argument type="service" id="sylius.context.cart" />
+            <argument type="service" id="router.default" />
+            <argument type="service" id="sylius_academy.wishlist_plugin.helper.flash_helper" />
+            <argument type="service" id="sylius.repository.product_variant" />
+            <tag name="controller.service_arguments" />
+        </service>
+    </services>
+</container>

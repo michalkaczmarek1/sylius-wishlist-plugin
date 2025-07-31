@@ -1,0 +1,7 @@
+{% extends '@SyliusAcademyWishlistPlugin/shop/wishlist/grid/base.html.twig' %}
+
+{% set prefixes = ['sylius_shop.wishlist_product'] %}
+{% set attrs = { resources } %}
+
+{% block title %}{{ 'Wishlist products' }} | {{ parent() }}{% endblock %}
+

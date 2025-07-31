@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+           https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="sylius_academy.wishlist_plugin.event.subscriber.add.wishlist.to.menu.my.account.subscriber"
+                 class="SyliusAcademy\WishlistPlugin\EventSubscriber\AddWishlistToMenuMyAccountSubscriber">
+            <tag name="kernel.event_subscriber" />
+        </service>
+
+        <service id="sylius_academy.wishlist_plugin.event.subscriber.create.new.wishlist.subscriber"
+                 class="SyliusAcademy\WishlistPlugin\EventSubscriber\CreateNewWishlistSubscriber">
+            <argument type="service" id="sylius_academy.wishlist_plugin.provider.wishlist.provider" />
+            <argument type="service" id="sylius_academy.wishlist_plugin.provider.wishlist.token.provider" />
+            <argument type="service" id="request_stack" />
+            <tag name="kernel.event_subscriber" />
+        </service>
+
+        <service id="sylius_academy.wishlist_plugin.event.subscriber.logged.user.wishlist.subscriber"
+                 class="SyliusAcademy\WishlistPlugin\EventSubscriber\LoggedUserWishlistSubscriber">
+            <argument type="service" id="sylius.section_resolver.uri_based" />
+            <argument type="service" id="sylius_academy.wishlist_plugin.provider.wishlist.provider" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <tag name="kernel.event_subscriber" />
+        </service>
+    </services>
+</container>

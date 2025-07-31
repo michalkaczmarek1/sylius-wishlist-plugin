@@ -1,0 +1,9 @@
+{% from '@SyliusShop/shared/breadcrumbs.html.twig' import breadcrumbs as breadcrumbs %}
+
+<div class="col-12">
+    {{ breadcrumbs([
+        { label: 'sylius.ui.home'|trans, path: path('sylius_shop_homepage')},
+        { label: 'sylius.ui.my_account'|trans, path: path('sylius_shop_account_dashboard')},
+        { label: 'sylius_academy_wishlist_plugin.menu.shop.account.wishlist_products_index'|trans, active: true }
+    ]) }}
+</div>

@@ -1,0 +1,3 @@
+sylius_academy.wishlist_plugin.shop:
+    resource: "@SyliusAcademyWishlistPlugin/config/routes/shop.yaml"
+    prefix: /{_locale}

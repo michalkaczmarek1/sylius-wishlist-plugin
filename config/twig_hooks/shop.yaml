@@ -1,0 +1,56 @@
+sylius_twig_hooks:
+    hooks:
+        sylius_shop.product.show.content.info.summary:
+            add_to_wishlist:
+                component: sylius_shop:product:wishlist
+                props:
+                    product: '@=_context.product'
+                    template: '@SyliusAcademyWishlistPlugin/shop/wishlist/product/add_to_wishlist.html.twig'
+                priority: 10
+        sylius_shop.base.header.content:
+            wishlist:
+                template: "@SyliusAcademyWishlistPlugin/shop/wishlist/wishlist_button.html.twig"
+                priority: 250
+
+        sylius_shop.wishlist_product.main:
+            grid:
+                template: '@SyliusShop/shared/grid.html.twig'
+                priority: 0
+        sylius_shop.wishlist_product.main.grid:
+            data_table:
+                template: '@SyliusAcademyWishlistPlugin/shop/wishlist/grid/data_table.html.twig'
+                priority: 0
+        sylius_shop.account.wishlist_product.index.content:
+            breadcrumbs:
+                template: '@SyliusAcademyWishlistPlugin/shop/wishlist/my_account/breadcrumbs.html.twig'
+                priority: 200
+            menu:
+                template: '@SyliusShop/account/common/content/menu.html.twig'
+                priority: 100
+            main:
+                template: '@SyliusShop/account/common/content/main.html.twig'
+                priority: 0
+        sylius_shop.account.wishlist_product.index.content.main:
+            grid:
+                template: '@SyliusShop/shared/grid.html.twig'
+                priority: 0
+        sylius_shop.account.wishlist_product.index.content.main.grid:
+            data_table:
+                template: '@SyliusAcademyWishlistPlugin/shop/wishlist/grid/data_table.html.twig'
+                priority: 0
+        sylius_shop.account.wishlist_product.index.content.main.header:
+            title:
+                template: '@SyliusAcademyWishlistPlugin/shop/wishlist/my_account/title.html.twig'
+                priority: 100
+
+        sylius_shop.product.index.content.body.main:
+            products:
+                template: '@SyliusAcademyWishlistPlugin/bundles/SyliusShopBundle/product/index/content/body/main/products.html.twig'
+                priority: 100
+        sylius_shop.shared.product.card:
+            wishlist:
+                component: sylius_shop:product:wishlist
+                props:
+                    product: '@=_context.product'
+                    template: '@SyliusAcademyWishlistPlugin/shop/wishlist/product/add_to_wishlist.html.twig'
+                priority: -10

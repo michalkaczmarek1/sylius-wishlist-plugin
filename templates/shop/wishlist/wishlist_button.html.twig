@@ -1,0 +1,10 @@
+{% if app.user %}
+    <div class="col-auto">
+        <a class="btn btn-primary" href="{{ path('sylius_academy_wishlist_shop_account_wishlist_product_index') }}">Wishlist</a>
+    </div>
+{% else %}
+    <div class="col-auto">
+        <a class="btn btn-primary" href="{{ path('sylius_academy_wishlist_shop_wishlist_product_index') }}">Wishlist</a>
+    </div>
+{% endif %}
+

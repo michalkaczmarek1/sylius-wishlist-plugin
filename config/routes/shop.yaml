@@ -1,0 +1,52 @@
+sylius_academy_wishlist_shop_wishlist_product:
+    resource: |
+        alias: sylius_academy_wishlist.wishlist_product
+        section: shop
+        templates: "@SyliusAcademyWishlistPlugin/shop/wishlist/grid"
+        redirect: update
+        grid: sylius_shop_wishlist_product
+    type: sylius.resource
+    prefix: /wishlist
+
+sylius_academy_wishlist_shop_account_wishlist_product_index:
+    path: /account/wishlist_products
+    methods: [ GET ]
+    defaults:
+        _controller: sylius_academy_wishlist.controller.wishlist_product::indexAction
+        _sylius:
+            section: shop_account
+            template: "@SyliusAcademyWishlistPlugin/shop/wishlist/my_account/index.html.twig"
+            grid: sylius_shop_wishlist_product
+
+sylius_academy_wishlist_shop_wishlist_product_delete:
+    path: /wishlist/wishlist-products/{id}
+    methods: [ DELETE ]
+    defaults:
+        _controller: sylius_academy_wishlist.controller.wishlist_product::deleteAction
+        _sylius:
+            section: shop
+            repository:
+                method: findOneByIdAndWishlist
+                arguments:
+                    - $id
+                    - expr:service('sylius_academy.wishlist_plugin.provider.wishlist.provider').provide()
+sylius_academy_wishlist_shop_account_wishlist_product_delete:
+    path: /account/wishlist_products/{id}
+    methods: [ DELETE ]
+    defaults:
+        _controller: sylius_academy_wishlist.controller.wishlist_product::deleteAction
+        _sylius:
+            section: shop_account
+            repository:
+                method: findOneByIdAndCustomer
+                arguments:
+                    - $id
+                    - expr:service('sylius.context.customer').getCustomer()
+
+sylius_academy_wishlist_shop_add_product_to_cart_from_wishlist:
+    path: /wishlist_products/cart
+    methods: [ POST ]
+    defaults:
+        _controller: sylius_academy.wishlist_plugin.controller.add_to_cart_from_wishlist_action
+        _sylius:
+            section: shop

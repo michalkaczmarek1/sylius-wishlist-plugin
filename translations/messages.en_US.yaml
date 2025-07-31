@@ -1,0 +1,16 @@
+sylius_academy_wishlist_plugin:
+    ui:
+        add_to_wishlist: Add to Wishlist
+        image: Image
+        name: Name
+        created_at: Created At
+        updated_at: Updated At
+        wishlist:
+            add: Product has been added to wishlist
+    menu:
+        shop:
+            account:
+                wishlist_products_index: Wishlist Products
+    grid:
+        action:
+            show_product: Show product

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+           https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="sylius_academy.wishlist_plugin.command_handler.add_product_to_cart_from_wishlist"
+                 class="SyliusAcademy\WishlistPlugin\CommandHandler\AddProductToCartFromWishlistHandler">
+            <argument type="service" id="sylius.factory.order_item" />
+            <argument type="service" id="sylius.modifier.order" />
+            <argument type="service" id="sylius.modifier.order_item_quantity" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="sylius.checker.inventory.availability" />
+            <argument type="service" id="sylius_academy.wishlist_plugin.helper.flash_helper" />
+            <tag name="messenger.message_handler" />
+        </service>
+    </services>
+</container>
