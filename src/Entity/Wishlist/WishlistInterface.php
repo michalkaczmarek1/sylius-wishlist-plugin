@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SyliusAcademy\WishlistPlugin\Entity\Wishlist;
 
+use Doctrine\Common\Collections\Collection;
 use Sylius\Component\Core\Model\ShopUserInterface;
 use Sylius\Resource\Model\ResourceInterface;
 use Sylius\Resource\Model\TimestampableInterface;
@@ -14,11 +15,14 @@ interface WishlistInterface extends TimestampableInterface, ResourceInterface
 
     public function setWishlistToken(?string $wishlistToken): void;
 
-    public function getWishlistProducts();
+    /**
+     * @return Collection<int, WishlistProductInterface|null>
+     */
+    public function getWishlistProducts(): Collection;
 
-    public function addWishlistProduct(?WishlistProduct $wishlistProduct);
+    public function addWishlistProduct(?WishlistProductInterface $wishlistProduct): void;
 
-    public function removeWishlistProduct(?WishlistProduct $wishlistProduct);
+    public function removeWishlistProduct(?WishlistProduct $wishlistProduct): void;
 
     public function getCustomer(): ?ShopUserInterface;
 

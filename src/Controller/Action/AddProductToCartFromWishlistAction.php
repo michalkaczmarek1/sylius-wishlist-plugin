@@ -17,6 +17,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final readonly class AddProductToCartFromWishlistAction
 {
+    /**
+     * @param RepositoryInterface<ProductVariantInterface> $productVariantRepository
+     */
     public function __construct(
         private MessageBusInterface $messageBus,
         private CartContextInterface $cartContext,
@@ -31,7 +34,8 @@ final readonly class AddProductToCartFromWishlistAction
      */
     public function __invoke(Request $request): RedirectResponse
     {
-        $productVariantId = (int) $request->get('product_variant_id');
+        $productVariantId = $request->get('product_variant_id', 0);
+        $productVariantId = is_numeric($productVariantId) ? (int) $productVariantId : 0;
         $url = $this->urlGenerator->generate('sylius_shop_cart_summary');
         if ($productVariantId <= 0) {
             $this->flashHelper->createMessage(
@@ -54,7 +58,8 @@ final readonly class AddProductToCartFromWishlistAction
             return new RedirectResponse($url);
         }
 
-        $quantity = (int) $request->get('quantity');
+        $quantity = $request->get('quantity', 0);
+        $quantity = is_numeric($quantity) ? (int) $quantity : 0;
         if ($quantity <= 0) {
             $this->flashHelper->createMessage(
                 'error',

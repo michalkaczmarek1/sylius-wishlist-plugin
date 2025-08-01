@@ -39,7 +39,7 @@ If not automatically added by Composer, add it manually.
 
 ```yaml
 sylius_academy_wishlist_plugin:
-    resource: "@SyliusAcademyWishlistPlugin/config/routes.yml"
+    resource: "@SyliusAcademyWishlistPlugin/config/routes.yaml"
 ```
 
 ### 7. Execute Sylius CLI commands
@@ -49,15 +49,3 @@ bin/console doctrine:migrations:diff
 bin/console doctrine:migrations:migrate
 bin/console cache:clear
 ```
-
-### 8. Build frontend assets
-
-Test it in environment where is installed node eg. docker container.
-
-```bash
-yarn install
-yarn encore dev
-```
-
-> **Note:** Ensure that all changes have been properly implemented and test the wishlist functionality on both frontend and backend.
-

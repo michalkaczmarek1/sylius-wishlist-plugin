@@ -10,6 +10,9 @@ use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
 use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistInterface;
 use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistProductInterface;
 
+/**
+ * @extends RepositoryInterface<WishlistProductInterface>
+ */
 interface WishlistProductRepositoryInterface extends RepositoryInterface
 {
     public function findByWishlistAndToken(WishlistInterface $wishlist): QueryBuilder;

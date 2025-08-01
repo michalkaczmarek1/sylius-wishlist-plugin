@@ -15,6 +15,9 @@ use SyliusAcademy\WishlistPlugin\Helper\FlashHelperInterface;
 
 final readonly class AddProductToCartFromWishlistHandler
 {
+    /**
+     * @param FactoryInterface<OrderItemInterface> $orderItemFactory
+     */
     public function __construct(
         private FactoryInterface $orderItemFactory,
         private OrderModifierInterface $orderModifier,
@@ -27,7 +30,7 @@ final readonly class AddProductToCartFromWishlistHandler
 
     public function __invoke(AddProductToCartFromWishlist $addProductToCartFromWishlist): void
     {
-        $quantity = $addProductToCartFromWishlist->getQuantity();
+        $quantity = (int) $addProductToCartFromWishlist->getQuantity();
         $productVariant = $addProductToCartFromWishlist->getProductVariant();
         if (!$this->availabilityChecker->isStockSufficient(
             $productVariant,
@@ -53,7 +56,7 @@ final readonly class AddProductToCartFromWishlistHandler
             return;
         }
         $orderItem->setVariant($productVariant);
-        $this->orderItemQuantityModifier->modify($orderItem, $quantity);
+        $this->orderItemQuantityModifier->modify($orderItem, (int) $quantity);
 
         $cart = $addProductToCartFromWishlist->getCart();
         $this->orderModifier->addToOrder($cart, $orderItem);

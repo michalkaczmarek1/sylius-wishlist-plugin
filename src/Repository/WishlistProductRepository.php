@@ -36,7 +36,7 @@ class WishlistProductRepository extends EntityRepository implements WishlistProd
             throw new Exception(sprintf('Id %d is wrong. Must be positive', $id));
         }
 
-        return $this->createQueryBuilder('wp')
+        $result = $this->createQueryBuilder('wp')
             ->join('wp.wishlist', 'w')
             ->andWhere('w.customer = :customer')
             ->andWhere('wp.id = :id')
@@ -44,6 +44,8 @@ class WishlistProductRepository extends EntityRepository implements WishlistProd
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof WishlistProductInterface ? $result : null;
     }
 
     public function findOneByIdAndWishlist(string $id, WishlistInterface $wishlist): ?WishlistProductInterface
@@ -53,12 +55,14 @@ class WishlistProductRepository extends EntityRepository implements WishlistProd
             throw new Exception(sprintf('Id %d is wrong. Must be positive', $id));
         }
 
-        return $this->createQueryBuilder('wp')
+        $result = $this->createQueryBuilder('wp')
             ->andWhere('wp.id = :id')
             ->andWhere('wp.wishlist = :wishlist')
             ->setParameter('id', $id)
             ->setParameter('wishlist', $wishlist)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof WishlistProductInterface ? $result : null;
     }
 }

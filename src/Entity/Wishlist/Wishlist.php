@@ -20,6 +20,7 @@ class Wishlist implements WishlistInterface
 
     private ?ShopUserInterface $customer = null;
 
+    /** @var Collection<int, WishlistProductInterface|null> */
     private Collection $wishlistProducts;
 
     /** @var ?DateTimeInterface */
@@ -48,29 +49,32 @@ class Wishlist implements WishlistInterface
         $this->wishlistToken = $wishlistToken;
     }
 
+    /**
+     * @return Collection<int, WishlistProductInterface|null>
+     */
     public function getWishlistProducts(): Collection
     {
         return $this->wishlistProducts;
     }
 
-    public function addWishlistProduct(?WishlistProduct $wishlistProduct): void
+    public function addWishlistProduct(?WishlistProductInterface $wishlistProduct): void
     {
         /** @var WishlistProduct $wishlistProductOriginal */
         foreach ($this->wishlistProducts as $wishlistProductOriginal) {
-            if ($wishlistProductOriginal->getProductVariant()->getId() === $wishlistProduct->getProductVariant()->getId()) {
+            if ($wishlistProductOriginal->getProductVariant()?->getId() === $wishlistProduct?->getProductVariant()?->getId()) {
                 return;
             }
         }
 
         $this->wishlistProducts->add($wishlistProduct);
-        $wishlistProduct->setWishlist($this);
+        $wishlistProduct?->setWishlist($this);
     }
 
     public function removeWishlistProduct(?WishlistProduct $wishlistProduct): void
     {
         if ($this->wishlistProducts->contains($wishlistProduct)) {
             $this->wishlistProducts->removeElement($wishlistProduct);
-            $wishlistProduct->setWishlist(null);
+            $wishlistProduct?->setWishlist(null);
         }
     }
 

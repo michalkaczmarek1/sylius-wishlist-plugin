@@ -6,9 +6,9 @@ namespace SyliusAcademy\WishlistPlugin\Provider\Token;
 
 interface WishlistTokenInterface
 {
-    public function getValue(): string;
+    public function getValue(): ?string;
 
-    public function setValue(string $value): void;
+    public function setValue(?string $value): void;
 
     public function __toString(): string;
 }

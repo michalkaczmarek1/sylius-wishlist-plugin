@@ -6,5 +6,5 @@ namespace SyliusAcademy\WishlistPlugin\Helper;
 
 interface FlashHelperInterface
 {
-    public function createMessage(string $type, string $format, ...$data): void;
+    public function createMessage(string $type, string $format, mixed ...$data): void;
 }

@@ -13,6 +13,10 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 final readonly class WishlistProvider implements WishlistProviderInterface
 {
+    /**
+     * @param FactoryInterface<WishlistInterface> $wishlistFactory
+     * @param RepositoryInterface<WishlistInterface> $wishlistRepository
+     */
     public function __construct(
         private TokenStorageInterface $tokenStorage,
         private RepositoryInterface $wishlistRepository,
@@ -73,7 +77,7 @@ final readonly class WishlistProvider implements WishlistProviderInterface
         ShopUserInterface $customer,
         ?WishlistInterface $wishlistFromToken,
     ): ?WishlistInterface {
-        /** @var WishlistInterface $wishlist */
+        /** @var WishlistInterface|null $wishlist */
         $wishlist = $this->wishlistRepository->findOneBy([
             'wishlistToken' => $token,
             'customer' => $customer,
@@ -93,9 +97,11 @@ final readonly class WishlistProvider implements WishlistProviderInterface
             return $wishlistFromToken;
         }
 
-        $wishlistProductsFromToken = $wishlistFromToken->getWishlistProducts();
-        foreach ($wishlistProductsFromToken as $wishlistProduct) {
-            $wishlist->addWishlistProduct($wishlistProduct);
+        $wishlistProductsFromToken = $wishlistFromToken?->getWishlistProducts();
+        if ($wishlistProductsFromToken !== null) {
+            foreach ($wishlistProductsFromToken as $wishlistProduct) {
+                $wishlist->addWishlistProduct($wishlistProduct);
+            }
         }
 
         return $wishlist;

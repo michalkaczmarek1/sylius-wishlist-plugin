@@ -32,8 +32,8 @@ final readonly class WishlistTokenProvider implements WishlistTokenProviderInter
         }
 
         $wishlistCookieToken = $mainRequest->attributes->get(self::COOKIE_KEY);
-        if (null !== $wishlistCookieToken) {
-            return (string) $wishlistCookieToken;
+        if (is_string($wishlistCookieToken)) {
+            return $wishlistCookieToken;
         }
 
         return (string) new WishlistToken();

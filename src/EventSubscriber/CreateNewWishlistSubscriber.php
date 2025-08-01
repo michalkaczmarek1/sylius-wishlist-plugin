@@ -101,11 +101,17 @@ final readonly class CreateNewWishlistSubscriber implements EventSubscriberInter
 
         $response = $event->getResponse();
         $wishlistCookieToken = $mainRequest->attributes->get(WishlistTokenProvider::COOKIE_KEY);
-        if (null === $wishlistCookieToken || '' === $wishlistCookieToken) {
+        if ('' === $wishlistCookieToken) {
             return;
         }
 
-        $cookie = new Cookie(WishlistTokenProvider::COOKIE_KEY, $wishlistCookieToken, strtotime('+1 year'));
+        $cookieValue = is_scalar($wishlistCookieToken) ? (string) $wishlistCookieToken : null;
+
+        if (null === $cookieValue) {
+            return;
+        }
+
+        $cookie = new Cookie(WishlistTokenProvider::COOKIE_KEY, $cookieValue, strtotime('+1 year'));
         $response->headers->setCookie($cookie);
 
         $mainRequest->attributes->remove(WishlistTokenProvider::COOKIE_KEY);

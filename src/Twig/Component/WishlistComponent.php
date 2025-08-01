@@ -6,10 +6,12 @@ namespace SyliusAcademy\WishlistPlugin\Twig\Component;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use LogicException;
 use Sylius\Bundle\ShopBundle\Twig\Component\Product\AddToCartFormComponent;
 use Sylius\Bundle\ShopBundle\Twig\Component\Product\Trait\ProductLivePropTrait;
 use Sylius\Bundle\ShopBundle\Twig\Component\Product\Trait\ProductVariantLivePropTrait;
 use Sylius\Bundle\UiBundle\Twig\Component\TemplatePropTrait;
+use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Component\Core\Model\ProductVariantInterface;
 use Sylius\Component\Core\Repository\ProductRepositoryInterface;
 use Sylius\Component\Core\Repository\ProductVariantRepositoryInterface;
@@ -17,9 +19,10 @@ use Sylius\Component\Product\Resolver\ProductVariantResolverInterface;
 use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
 use Sylius\Resource\Factory\FactoryInterface;
 use Sylius\TwigHooks\LiveComponent\HookableLiveComponentTrait;
+use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistProductInterface;
 use SyliusAcademy\WishlistPlugin\Provider\WishlistProviderInterface;
-use SyliusAcademy\WishlistPlugin\Provider\WishlistTokenProviderInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
@@ -38,6 +41,12 @@ final class WishlistComponent
     use ProductLivePropTrait;
     use ProductVariantLivePropTrait;
 
+    /**
+     * @param ProductRepositoryInterface<ProductInterface> $productRepository
+     * @param ProductVariantRepositoryInterface<ProductVariantInterface> $productVariantRepository
+     * @param FactoryInterface<WishlistProductInterface> $wishlistProductFactory
+     * @param RepositoryInterface<WishlistProductInterface> $wishlistProductRepository
+     */
     public function __construct(
         protected ProductRepositoryInterface $productRepository,
         protected ProductVariantRepositoryInterface $productVariantRepository,
@@ -45,7 +54,6 @@ final class WishlistComponent
         private readonly RequestStack $requestStack,
         private readonly ProductVariantResolverInterface $productVariantResolver,
         private readonly WishlistProviderInterface $wishlistProvider,
-        private readonly WishlistTokenProviderInterface $wishlistTokenProvider,
         private readonly RepositoryInterface $wishlistProductRepository,
         private readonly FactoryInterface $wishlistProductFactory,
     ) {
@@ -56,10 +64,11 @@ final class WishlistComponent
     #[PostMount]
     public function postMount(): void
     {
-        /** @var ProductVariantInterface|null $variant * */
-        $variant = $this->productVariantResolver->getVariant($this->product);
-
-        $this->variant = $variant;
+        if (null !== $this->product) {
+            /** @var ProductVariantInterface|null $variant * */
+            $variant = $this->productVariantResolver->getVariant($this->product);
+            $this->variant = $variant;
+        }
     }
 
     #[LiveListener(AddToCartFormComponent::SYLIUS_SHOP_VARIANT_CHANGED)]
@@ -75,7 +84,9 @@ final class WishlistComponent
             return;
         }
 
-        $this->variant = $changedVariant->isEnabled() ? $changedVariant : null;
+        if (null !== $changedVariant) {
+            $this->variant = $changedVariant->isEnabled() ? $changedVariant : null;
+        }
     }
 
     /**
@@ -86,7 +97,7 @@ final class WishlistComponent
     {
         $wishlist = $this->wishlistProvider->provide();
         if ($this->wishlistProductRepository->findBy([
-            'productVariant' => $this->variant->getId(),
+            'productVariant' => $this->variant?->getId(),
             'wishlist' => $wishlist->getId(),
         ])) {
             return;
@@ -98,6 +109,12 @@ final class WishlistComponent
         $this->entityManager->persist($wishlistProduct);
         $this->entityManager->flush();
 
-        $this->requestStack->getSession()->getFlashBag()->add('success', 'Product has been added to wishlist');
+        $session = $this->requestStack->getSession();
+
+        if (!$session instanceof Session) {
+            throw new LogicException('The current session must be an instance of "Symfony\Component\HttpFoundation\Session\Session".');
+        }
+
+        $session->getFlashBag()->add('success', 'Product has been added to wishlist');
     }
 }

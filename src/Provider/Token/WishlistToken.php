@@ -18,19 +18,19 @@ final class WishlistToken implements WishlistTokenInterface
         }
     }
 
-    public function getValue(): string
+    public function getValue(): ?string
     {
         return $this->value;
     }
 
-    public function setValue(string $value): void
+    public function setValue(?string $value): void
     {
         $this->value = $value;
     }
 
     public function __toString(): string
     {
-        return $this->getValue();
+        return $this->getValue() ?? '';
     }
 
     private function generate(): string
