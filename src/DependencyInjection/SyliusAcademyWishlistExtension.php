@@ -34,7 +34,7 @@ final class SyliusAcademyWishlistExtension extends AbstractResourceExtension imp
 
     protected function getMigrationsNamespace(): string
     {
-        return 'DoctrineMigrations';
+        return 'SyliusAcademy\WishlistPlugin\Migrations';
     }
 
     protected function getMigrationsDirectory(): string
