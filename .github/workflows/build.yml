@@ -134,7 +134,6 @@ jobs:
                 name: Prepare test application database
                 run: |
                     vendor/bin/console doctrine:database:create -vvv
-                    vendor/bin/console doctrine:migrations:diff -vvv
                     vendor/bin/console doctrine:migrations:migrate -vvv
 
             -
