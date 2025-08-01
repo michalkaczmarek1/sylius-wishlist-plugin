@@ -110,7 +110,7 @@ jobs:
 
             -
                 name: Run ECS
-                run: vendor/bin/ecs
+                run: vendor/bin/ecs check src/ tests/
 
             -
                 name: Get Yarn cache directory
