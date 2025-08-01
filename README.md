@@ -1,129 +1,63 @@
-<p align="center">
-    <a href="https://sylius.com" target="_blank">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://media.sylius.com/sylius-logo-800-dark.png">
-          <source media="(prefers-color-scheme: light)" srcset="https://media.sylius.com/sylius-logo-800.png">
-          <img alt="Sylius Logo." src="https://media.sylius.com/sylius-logo-800.png">
-        </picture>
-    </a>
-</p>
+# Sylius Wishlist Plugin
 
-<h1 align="center">Plugin Skeleton</h1>
+## Plugin Installation
 
-<p align="center">Skeleton for starting Sylius plugins.</p>
+### 1. Add repository to `composer.json`
 
-## Documentation
+```json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/michalkaczmarek1/sylius-wishlist-plugin.git"
+    }
+]
+```
 
-For a comprehensive guide on Sylius Plugins development please go to Sylius documentation,
-there you will find the <a href="https://docs.sylius.com/en/latest/plugin-development-guide/index.html">Plugin Development Guide</a>, that is full of examples.
+### 2. Set minimum stability to `dev`
 
-For more information about the **Test Application** included in the skeleton, please refer to the [Sylius documentation](https://docs.sylius.com/sylius-plugins/plugins-development-guide/testapplication).
+```json
+"minimum-stability": "dev"
+```
 
-## Quickstart Installation
+### 3. Install the plugin via Composer
 
-Run `composer create-project sylius/plugin-skeleton ProjectName`.
+```bash
+composer require sylius-academy/wishlist-plugin:dev-master
+```
 
-### Traditional
+### 4. Ensure the plugin is registered in `config/bundles.php`
 
-1. From the plugin skeleton root directory, run the following commands:
+If not automatically added by Composer, add it manually.
 
-    ```bash
-    (cd vendor/sylius/test-application && yarn install)
-    (cd vendor/sylius/test-application && yarn build)
-    vendor/bin/console assets:install
-   
-    vendor/bin/console doctrine:database:create
-    vendor/bin/console doctrine:migrations:migrate -n
-    # Optionally load data fixtures
-    vendor/bin/console vendor/bin/console sylius:fixtures:load -n
-    ```
+### 5. Import the plugin configuration into `config/packages/_sylius.yaml`
 
-To be able to set up a plugin's database, remember to configure your database credentials in `tests/Application/.env` and `tests/Application/.env.test`.
+```yaml
+- { resource: "@SyliusAcademyWishlistPlugin/config/config.yaml" }
+```
 
-2. Run your local server:
+### 6. Import plugin routes in `config/routes.yaml`
 
-      ```bash
-      symfony server:ca:install
-      symfony server:start -d
-      ```
+```yaml
+sylius_academy_wishlist_plugin:
+    resource: "@SyliusAcademyWishlistPlugin/config/routes.yml"
+```
 
-3. Open your browser and navigate to `https://localhost:8000`.
+### 7. Execute Sylius CLI commands
 
-### Docker
+```bash
+bin/console doctrine:migrations:diff
+bin/console doctrine:migrations:migrate
+bin/console cache:clear
+```
 
-1. Execute `make init` to initialize the container and install the dependencies.
+### 8. Build frontend assets
 
-2. Execute `make database-init` to create the database and run migrations.
+Test it in environment where is installed node eg. docker container.
 
-3. (Optional) Execute `make load-fixtures` to load the fixtures.
+```bash
+yarn install
+yarn encore dev
+```
 
-4. Your app is available at `http://localhost`.
+> **Note:** Ensure that all changes have been properly implemented and test the wishlist functionality on both frontend and backend.
 
-## Usage
-
-### Running plugin tests
-
-  - PHPUnit
-
-    ```bash
-    vendor/bin/phpunit
-    ```
-
-  - Behat (non-JS scenarios)
-
-    ```bash
-    vendor/bin/behat --strict --tags="~@javascript&&~@mink:chromedriver"
-    ```
-
-  - Behat (JS scenarios)
- 
-    1. [Install Symfony CLI command](https://symfony.com/download).
- 
-    2. Start Headless Chrome:
-    
-      ```bash
-      google-chrome-stable --enable-automation --disable-background-networking --no-default-browser-check --no-first-run --disable-popup-blocking --disable-default-apps --allow-insecure-localhost --disable-translate --disable-extensions --no-sandbox --enable-features=Metal --headless --remote-debugging-port=9222 --window-size=2880,1800 --proxy-server='direct://' --proxy-bypass-list='*' http://127.0.0.1
-      ```
-    
-    3. Install SSL certificates (only once needed) and run test application's webserver on `127.0.0.1:8080`:
-    
-      ```bash
-      symfony server:ca:install
-      APP_ENV=test symfony server:start --port=8080 --daemon
-      ```
-    
-    4. Run Behat:
-    
-      ```bash
-      vendor/bin/behat --strict --tags="@javascript,@mink:chromedriver"
-      ```
-    
-  - Static Analysis
-      
-    - PHPStan
-    
-      ```bash
-      vendor/bin/phpstan analyse -c phpstan.neon -l max src/  
-      ```
-
-  - Coding Standard
-  
-    ```bash
-    vendor/bin/ecs check
-    ```
-
-### Opening Sylius with your plugin
-
-- Using `test` environment:
-
-    ```bash
-    APP_ENV=test vendor/bin/console vendor/bin/console sylius:fixtures:load -n
-    APP_ENV=test symfony server:start -d
-    ```
-    
-- Using `dev` environment:
-
-    ```bash
-    vendor/bin/console vendor/bin/console sylius:fixtures:load -n
-    symfony server:start -d
-    ```
