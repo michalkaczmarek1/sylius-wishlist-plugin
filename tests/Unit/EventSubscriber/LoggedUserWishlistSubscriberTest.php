@@ -16,9 +16,12 @@ use Sylius\Component\User\Model\UserInterface;
 use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistInterface;
 use SyliusAcademy\WishlistPlugin\EventSubscriber\LoggedUserWishlistSubscriber;
 use SyliusAcademy\WishlistPlugin\Provider\WishlistProviderInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\Security\Http\SecurityEvents;
 
-class LoggedUserWishlistSubscriberTest extends TestCase
+final class LoggedUserWishlistSubscriberTest extends TestCase
 {
     private WishlistProviderInterface $wishlistProvider;
 
@@ -26,11 +29,21 @@ class LoggedUserWishlistSubscriberTest extends TestCase
 
     private SectionProviderInterface $sectionProvider;
 
+    private InteractiveLoginEvent $event;
+
     protected function setUp(): void
     {
         $this->wishlistProvider = self::createMock(WishlistProviderInterface::class);
         $this->entityManager = self::createMock(EntityManagerInterface::class);
         $this->sectionProvider = self::createMock(SectionProviderInterface::class);
+
+        $user = self::createMock(UserInterface::class);
+        $token = self::createMock(TokenInterface::class);
+        $token->method('getUser')->willReturn($user);
+        $this->event = new InteractiveLoginEvent(
+            self::createMock(Request::class),
+            $token,
+        );
     }
 
     public function test_get_subscribed_events_returns_expected_events(): void
@@ -92,12 +105,11 @@ class LoggedUserWishlistSubscriberTest extends TestCase
     {
         $this->sectionProvider->method('getSection')->willReturn(null);
         $subscriber = $this->createSubscriber();
-        $event = self::createMock(UserEvent::class);
 
         $this->wishlistProvider->expects($this->never())->method('provide');
         $this->entityManager->expects($this->never())->method('flush');
 
-        $subscriber->onInteractiveLogin($event);
+        $subscriber->onInteractiveLogin($this->event);
     }
 
     public function test_on_interactive_login_skips_if_not_shop_user(): void
@@ -105,13 +117,12 @@ class LoggedUserWishlistSubscriberTest extends TestCase
         $this->sectionProvider->method('getSection')->willReturn(new ShopSection());
         $subscriber = $this->createSubscriber();
 
-        $event = self::createMock(UserEvent::class);
-        $event->method('getUser')->willReturn(self::createMock(UserInterface::class));
+//        $this->event->getAuthenticationToken()->getUser();
 
         $this->wishlistProvider->expects($this->never())->method('provide');
         $this->entityManager->expects($this->never())->method('flush');
 
-        $subscriber->onInteractiveLogin($event);
+        $subscriber->onInteractiveLogin($this->event);
     }
 
     #[DataProvider('userProvider')]
@@ -126,8 +137,14 @@ class LoggedUserWishlistSubscriberTest extends TestCase
 
         $shopUser = self::createMock(ShopUserInterface::class);
         $shopUser->method('getId')->willReturn($userId);
-        $event = self::createMock(UserEvent::class);
-        $event->method('getUser')->willReturn($shopUser);
+//        $event = self::createMock(UserEvent::class);
+//        $event->method('getUser')->willReturn($shopUser);
+        $token = self::createMock(TokenInterface::class);
+        $token->method('getUser')->willReturn($shopUser);
+        $this->event = new InteractiveLoginEvent(
+            self::createMock(Request::class),
+            $token,
+        );
 
         $wishlist = self::createMock(WishlistInterface::class);
         $wishlist->method('getId')->willReturn($wishlistId);
@@ -147,7 +164,7 @@ class LoggedUserWishlistSubscriberTest extends TestCase
             $this->entityManager->expects($this->never())->method('flush');
         }
 
-        $subscriber->onInteractiveLogin($event);
+        $subscriber->onInteractiveLogin($this->event);
     }
 
     public static function userProvider(): array

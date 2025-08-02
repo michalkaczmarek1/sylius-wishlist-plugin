@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\SyliusAcademy\WishlistPlugin\Unit\Twig\Component;
+namespace Sylius\Tests\Api\Twig\Component\Twig\Component;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Component\Core\Model\ProductVariantInterface;
 use Sylius\Component\Core\Repository\ProductRepositoryInterface;
@@ -14,20 +16,19 @@ use Sylius\Component\Product\Resolver\ProductVariantResolverInterface;
 use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
 use Sylius\Resource\Factory\FactoryInterface;
 use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistInterface;
-use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistProduct;
+use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistProductInterface;
 use SyliusAcademy\WishlistPlugin\Provider\WishlistProviderInterface;
-use SyliusAcademy\WishlistPlugin\Provider\WishlistTokenProviderInterface;
 use SyliusAcademy\WishlistPlugin\Twig\Component\WishlistComponent;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
-use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 
-class WishlistComponentTest extends TestCase
+final class WishlistComponentTest extends TestCase
 {
-    private WishlistComponent $component;
+    private ProductRepositoryInterface $productRepository;
 
-    private RequestStack $requestStack;
+    private ProductVariantRepositoryInterface $productVariantRepository;
+
+    private EntityManagerInterface $entityManager;
+
+    private ProductVariantResolverInterface $productVariantResolver;
 
     private WishlistProviderInterface $wishlistProvider;
 
@@ -35,156 +36,208 @@ class WishlistComponentTest extends TestCase
 
     private FactoryInterface $wishlistProductFactory;
 
-    private EntityManagerInterface $entityManager;
+    private LoggerInterface $logger;
 
-    private ProductVariantRepositoryInterface $productVariantRepository;
-
-    private ProductVariantResolverInterface $productVariantResolver;
+    private WishlistComponent $wishlistComponent;
 
     protected function setUp(): void
     {
-        $this->component = new WishlistComponent(
-            self::createMock(ProductRepositoryInterface::class),
-            $this->productVariantRepository = self::createMock(ProductVariantRepositoryInterface::class),
-            $this->entityManager = self::createMock(EntityManagerInterface::class),
-            $this->requestStack = new RequestStack(),
-            $this->productVariantResolver = self::createMock(ProductVariantResolverInterface::class),
-            $this->wishlistProvider = self::createMock(WishlistProviderInterface::class),
-            self::createMock(WishlistTokenProviderInterface::class),
-            $this->wishlistProductRepository = self::createMock(RepositoryInterface::class),
-            $this->wishlistProductFactory = self::createMock(FactoryInterface::class),
+        $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
+        $this->productVariantRepository = $this->createMock(ProductVariantRepositoryInterface::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->productVariantResolver = $this->createMock(ProductVariantResolverInterface::class);
+        $this->wishlistProvider = $this->createMock(WishlistProviderInterface::class);
+        $this->wishlistProductRepository = $this->createMock(RepositoryInterface::class);
+        $this->wishlistProductFactory = $this->createMock(FactoryInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+
+        $this->wishlistComponent = new WishlistComponent(
+            $this->productRepository,
+            $this->productVariantRepository,
+            $this->entityManager,
+            $this->productVariantResolver,
+            $this->wishlistProvider,
+            $this->wishlistProductRepository,
+            $this->wishlistProductFactory,
+            $this->logger,
         );
     }
 
-    public function test_add_to_wishlist_adds_product(): void
+    public function test_add_to_wishlist_sets_is_in_wishlist_true_when_product_added_successfully(): void
     {
-        $variant = $this->mockVariant(10);
-        $wishlist = $this->mockWishlist(1);
-        $wishlistProduct = self::createMock(WishlistProduct::class);
+        $wishlist = $this->createMock(WishlistInterface::class);
+        $wishlistProduct = $this->createMock(WishlistProductInterface::class);
+        $variant = $this->createMock(ProductVariantInterface::class);
 
+        $variantId = 123;
+        $wishlistId = 456;
+
+        $this->wishlistComponent->variant = $variant;
+
+        $variant->method('getId')->willReturn($variantId);
         $this->wishlistProvider->method('provide')->willReturn($wishlist);
-        $this->wishlistProductRepository->method('findBy')->willReturn([]);
-        $this->wishlistProductFactory->method('createNew')->willReturn($wishlistProduct);
+        $wishlist->method('getId')->willReturn($wishlistId);
 
-        $wishlistProduct->expects($this->once())->method('setProductVariant')->with($variant);
+        $this->wishlistProductRepository
+            ->method('findBy')
+            ->with(['productVariant' => $variantId, 'wishlist' => $wishlistId])
+            ->willReturn([]);
+
+        $this->wishlistProductFactory->method('createNew')->willReturn($wishlistProduct);
         $wishlist->expects($this->once())->method('addWishlistProduct')->with($wishlistProduct);
         $this->entityManager->expects($this->once())->method('persist')->with($wishlistProduct);
-        $this->entityManager->expects($this->once())->method('flush');
 
-        $this->mockFlashBag('Product has been added to wishlist');
+        $this->wishlistComponent->addToWishlist();
 
-        $this->component->variant = $variant;
-        $this->component->addToWishlist();
+        $this->assertFalse($this->wishlistComponent->isInWishlist);
     }
 
-    public function test_add_to_wishlist_when_product_already_exists_on_wishlist(): void
+    public function test_add_to_wishlist_logs_error_on_exception(): void
     {
-        $variant = $this->mockVariant(10);
-        $wishlist = $this->mockWishlist(1);
-
-        $this->wishlistProvider->expects($this->once())->method('provide')->willReturn($wishlist);
-        $this->wishlistProductRepository->expects($this->once())->method('findBy')->willReturn([self::createMock(WishlistProduct::class)]);
-
-        $this->component->variant = $variant;
-        $this->component->addToWishlist();
+        $this->wishlistProvider->method('provide')->willThrowException(new Exception('An error occurred'));
+        $this->logger->expects($this->once())->method('error')->with('An error occurred');
+        $this->wishlistComponent->addToWishlist();
     }
 
-    public function test_update_product_variant_updates_variant_correctly(): void
+    public function test_add_to_wishlist_does_nothing_when_product_already_in_wishlist(): void
     {
-        $currentVariant = $this->mockVariant(1, true);
-        $newVariant = $this->mockVariant(2, true);
+        $wishlist = $this->createMock(WishlistInterface::class);
+        $variant = $this->createMock(ProductVariantInterface::class);
 
-        $this->productVariantRepository->method('find')->with(2)->willReturn($newVariant);
-        $this->component->variant = $currentVariant;
+        $variantId = 123;
+        $wishlistId = 456;
 
-        $this->component->updateProductVariant(2);
+        $this->wishlistComponent->variant = $variant;
 
-        $this->assertSame($newVariant, $this->component->variant);
+        $variant->method('getId')->willReturn($variantId);
+        $this->wishlistProvider->method('provide')->willReturn($wishlist);
+        $wishlist->method('getId')->willReturn($wishlistId);
+
+        $this->wishlistProductRepository
+            ->method('findBy')
+            ->with(['productVariant' => $variantId, 'wishlist' => $wishlistId])
+            ->willReturn([true]);
+
+        $this->wishlistComponent->addToWishlist();
+
+        $this->assertTrue($this->wishlistComponent->isInWishlist);
     }
 
-    public function test_update_product_variant_with_variant_null(): void
+    public function test_post_mount_sets_variant_when_product_is_not_null(): void
     {
-        $this->component->updateProductVariant(null);
-        $this->assertNull($this->component->variant);
+        $product = $this->createMock(ProductInterface::class);
+        $variant = $this->createMock(ProductVariantInterface::class);
+
+        $this->wishlistComponent->product = $product;
+
+        $this->productVariantResolver->method('getVariant')->with($product)->willReturn($variant);
+
+        $this->wishlistComponent->postMount();
+
+        $this->assertSame($variant, $this->wishlistComponent->variant);
     }
 
-    public function test_update_product_variant_does_not_update_with_same_variant(): void
+    public function test_post_mount_sets_is_in_wishlist_to_true_when_product_in_wishlist(): void
     {
-        $variant = $this->mockVariant(1, true);
+        $wishlist = $this->createMock(WishlistInterface::class);
+        $variant = $this->createMock(ProductVariantInterface::class);
 
-        $this->productVariantRepository->method('find')->with(1)->willReturn($variant);
-        $this->component->variant = $variant;
+        $variantId = 123;
+        $wishlistId = 456;
 
-        $this->component->updateProductVariant(1);
+        $this->wishlistComponent->variant = $variant;
 
-        $this->assertSame($variant, $this->component->variant);
+        $variant->method('getId')->willReturn($variantId);
+        $this->wishlistProvider->method('provide')->willReturn($wishlist);
+        $wishlist->method('getId')->willReturn($wishlistId);
+
+        $this->wishlistProductRepository
+            ->method('findBy')
+            ->with(['productVariant' => $variantId, 'wishlist' => $wishlistId])
+            ->willReturn([true]);
+
+        $this->wishlistComponent->postMount();
+
+        $this->assertTrue($this->wishlistComponent->isInWishlist);
     }
 
-    public function test_update_product_variant_resets_variant_on_invalid_data(): void
+    public function test_post_mount_sets_is_in_wishlist_to_false_when_product_not_in_wishlist(): void
     {
-        $currentVariant = $this->mockVariant(1, true);
-        $invalidVariant = $this->mockVariant(2, false);
+        $wishlist = $this->createMock(WishlistInterface::class);
+        $variant = $this->createMock(ProductVariantInterface::class);
 
-        $this->productVariantRepository->method('find')->with(2)->willReturn($invalidVariant);
-        $this->component->variant = $currentVariant;
+        $variantId = 123;
+        $wishlistId = 456;
 
-        $this->component->updateProductVariant(2);
+        $this->wishlistComponent->variant = $variant;
 
-        $this->assertNull($this->component->variant);
+        $variant->method('getId')->willReturn($variantId);
+        $this->wishlistProvider->method('provide')->willReturn($wishlist);
+        $wishlist->method('getId')->willReturn($wishlistId);
+
+        $this->wishlistProductRepository
+            ->method('findBy')
+            ->with(['productVariant' => $variantId, 'wishlist' => $wishlistId])
+            ->willReturn([]);
+
+        $this->wishlistComponent->postMount();
+
+        $this->assertFalse($this->wishlistComponent->isInWishlist);
     }
 
-    public function test_post_mount_sets_variant_correctly(): void
+    public function test_post_mount_logs_error_on_exception(): void
     {
-        $product = self::createMock(ProductInterface::class);
-        $resolvedVariant = self::createMock(ProductVariantInterface::class);
-
-        $this->component->product = $product;
-        $this->productVariantResolver->method('getVariant')->willReturn($resolvedVariant);
-
-        $this->component->postMount();
-
-        $this->assertSame($resolvedVariant, $this->component->variant);
+        $this->wishlistProvider->method('provide')->willThrowException(new Exception('An error occurred'));
+        $this->logger->expects($this->once())->method('error')->with('An error occurred');
+        $this->wishlistComponent->postMount();
     }
 
-    public function test_post_mount_handles_null_variant(): void
+    public function test_update_product_variant_updates_variant_when_valid_id_provided(): void
     {
-        $product = self::createMock(ProductInterface::class);
+        $variantId = 123;
+        $newVariant = $this->createMock(ProductVariantInterface::class);
 
-        $this->component->product = $product;
-        $this->productVariantResolver->method('getVariant')->willReturn(null);
+        $this->productVariantRepository->method('find')->with($variantId)->willReturn($newVariant);
+        $newVariant->method('isEnabled')->willReturn(true);
 
-        $this->component->postMount();
+        $this->wishlistComponent->updateProductVariant($variantId);
 
-        $this->assertNull($this->component->variant);
+        $this->assertSame($newVariant, $this->wishlistComponent->variant);
     }
 
-    private function mockVariant(int $id, bool $enabled = true): ProductVariantInterface
+    public function test_update_product_variant_sets_variant_to_null_when_variant_is_disabled(): void
     {
-        $variant = self::createMock(ProductVariantInterface::class);
-        $variant->method('getId')->willReturn($id);
-        $variant->method('isEnabled')->willReturn($enabled);
+        $variantId = 123;
+        $newVariant = $this->createMock(ProductVariantInterface::class);
 
-        return $variant;
+        $this->productVariantRepository->method('find')->with($variantId)->willReturn($newVariant);
+        $newVariant->method('isEnabled')->willReturn(false);
+
+        $this->wishlistComponent->updateProductVariant($variantId);
+
+        $this->assertNull($this->wishlistComponent->variant);
     }
 
-    private function mockWishlist(int $id): WishlistInterface
+    public function test_update_product_variant_does_nothing_when_variant_id_is_null(): void
     {
-        $wishlist = self::createMock(WishlistInterface::class);
-        $wishlist->method('getId')->willReturn($id);
+        $this->wishlistComponent->variant = $this->createMock(ProductVariantInterface::class);
 
-        return $wishlist;
+        $this->wishlistComponent->updateProductVariant(null);
+
+        $this->assertNotNull($this->wishlistComponent->variant);
     }
 
-    private function mockFlashBag(string $message): void
+    public function test_update_product_variant_does_nothing_when_provided_variant_is_same_as_current(): void
     {
-        $flashBag = self::createMock(FlashBagInterface::class);
-        $flashBag->expects($this->once())->method('add')->with('success', $message);
+        $variantId = 123;
+        $currentVariant = $this->createMock(ProductVariantInterface::class);
 
-        $session = self::createMock(FlashBagAwareSessionInterface::class);
-        $session->method('getFlashBag')->willReturn($flashBag);
+        $this->wishlistComponent->variant = $currentVariant;
 
-        $request = new Request();
-        $request->setSession($session);
-        $this->requestStack->push($request);
+        $this->productVariantRepository->method('find')->with($variantId)->willReturn($currentVariant);
+
+        $this->wishlistComponent->updateProductVariant($variantId);
+
+        $this->assertSame($currentVariant, $this->wishlistComponent->variant);
     }
 }

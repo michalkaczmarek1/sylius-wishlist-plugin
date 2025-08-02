@@ -7,7 +7,7 @@ namespace Tests\SyliusAcademy\WishlistPlugin\Unit\Provider\Token;
 use PHPUnit\Framework\TestCase;
 use SyliusAcademy\WishlistPlugin\Provider\Token\WishlistToken;
 
-class WishlistTokenTest extends TestCase
+final class WishlistTokenTest extends TestCase
 {
     public function test_it_returns_token_value(): void
     {

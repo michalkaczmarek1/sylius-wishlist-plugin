@@ -9,7 +9,7 @@ use SyliusAcademy\WishlistPlugin\Provider\WishlistTokenProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class WishlistTokenProviderTest extends TestCase
+final class WishlistTokenProviderTest extends TestCase
 {
     private RequestStack $requestStack;
 

@@ -17,7 +17,7 @@ use SyliusAcademy\WishlistPlugin\Command\AddProductToCartFromWishlist;
 use SyliusAcademy\WishlistPlugin\CommandHandler\AddProductToCartFromWishlistHandler;
 use SyliusAcademy\WishlistPlugin\Helper\FlashHelperInterface;
 
-class AddProductToCartFromWishlistHandlerTest extends TestCase
+final class AddProductToCartFromWishlistHandlerTest extends TestCase
 {
     private FactoryInterface $orderItemFactory;
 

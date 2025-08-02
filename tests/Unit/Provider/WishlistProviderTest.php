@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SyliusAcademy\WishlistPlugin\Unit\Provider;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use PHPUnit\Framework\TestCase;
 use Sylius\Component\Core\Model\ShopUserInterface;
 use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
@@ -65,9 +67,9 @@ final class WishlistProviderTest extends TestCase
         $this->wishlistRepository->method('findOneBy')->willReturn(null);
 
         $user = self::createMock(ShopUserInterface::class);
-        $token = self::createMock(TokenInterface::class);
-        $token->method('getUser')->willReturn($user);
-        $this->tokenStorage->method('getToken')->willReturn($token);
+        $tokenMock = self::createMock(TokenInterface::class);
+        $tokenMock->method('getUser')->willReturn($user);
+        $this->tokenStorage->method('getToken')->willReturn($tokenMock);
 
         $wishlist = self::createMock(WishlistInterface::class);
 
@@ -159,32 +161,29 @@ final class WishlistProviderTest extends TestCase
         $wishlistFromToken = self::createMock(WishlistInterface::class);
         $wishlistFromCustomer = self::createMock(WishlistInterface::class);
         $wishlistProduct = self::createMock(WishlistProduct::class);
-
-        $wishlistFromToken->method('getWishlistProducts')->willReturn([$wishlistProduct]);
         $wishlistFromCustomer->expects($this->once())->method('addWishlistProduct')->with($wishlistProduct);
 
-        $callCount = 0;
+        // Konfiguracja kolekcji produktów zwracanych przez wishlistę na podstawie tokena.
+        $collection = new ArrayCollection([$wishlistProduct]); // Zamiast mocka `Collection`, lepiej użyć rzeczywistej klasy `ArrayCollection`.
+        $wishlistFromToken->method('getWishlistProducts')->willReturn($collection);
 
+        // Mock repozytorium wishlist i callback, aby dynamicznie zwracał właściwą wishlistę.
         $this->wishlistRepository->method('findOneBy')->willReturnCallback(function ($criteria) use (
             $wishlistFromToken,
             $wishlistFromCustomer,
-            $user,
-            &$callCount
+            $user
         ) {
             if (isset($criteria['wishlistToken'], $criteria['customer'])) {
-                ++$callCount;
-
-                return $wishlistFromCustomer;
+                return $wishlistFromCustomer; // Powrót wishlisty użytkownika na podstawie tokena i klienta.
             }
             if (isset($criteria['wishlistToken']) && !isset($criteria['customer'])) {
-                ++$callCount;
-
-                return $wishlistFromToken;
+                return $wishlistFromToken; // Powrót wishlisty na podstawie samego tokena.
             }
 
             return null;
         });
 
+        // Tworzenie instancji testowego `WishlistProvider`.
         $provider = new WishlistProvider(
             $this->tokenStorage,
             $this->wishlistRepository,
@@ -192,7 +191,10 @@ final class WishlistProviderTest extends TestCase
             $this->wishlistTokenProvider,
         );
 
+        // Wynik testowanej metody.
         $result = $provider->provide();
+
+        // Sprawdzenie, czy po łączeniu wynikową wishlistą jest wishlist użytkownika.
         $this->assertSame($wishlistFromCustomer, $result);
     }
 }

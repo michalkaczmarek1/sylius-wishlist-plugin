@@ -9,7 +9,7 @@ use Sylius\Component\Product\Model\ProductVariantInterface;
 use SyliusAcademy\WishlistPlugin\Entity\Wishlist\Wishlist;
 use SyliusAcademy\WishlistPlugin\Entity\Wishlist\WishlistProduct;
 
-class WishlistTest extends TestCase
+final class WishlistTest extends TestCase
 {
     private Wishlist $wishlist;
 
