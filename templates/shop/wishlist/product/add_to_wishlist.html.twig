@@ -1,19 +1,24 @@
 <div {{ attributes }}>
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="alert alert-{{ label }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-    <div>
-         <button
-             class="btn btn-primary"
-             type="button"
-             data-action="live#action:prevent"
-             data-live-action-param="addToWishlist"
-        >
-            Add to wishlist
-        </button>
-    </div>
+    {% if isInWishlist == false %}
+        <div>
+            <button
+                    class="btn btn-primary"
+                    type="button"
+                    data-action="live#action:prevent"
+                    data-live-action-param="addToWishlist"
+            >
+                {{ ux_icon('tabler:heart', {'class': 'icon'}) }}
+            </button>
+        </div>
+    {% else %}
+        <div>
+            <button
+                    class="btn btn-secondary"
+                    type="button"
+                    disabled
+            >
+                {{ ux_icon('tabler:heart-filled', {'class': 'icon'}) }}
+            </button>
+        </div>
+    {% endif %}
 </div>

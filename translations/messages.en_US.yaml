@@ -1,6 +1,6 @@
 sylius_academy_wishlist_plugin:
     ui:
-        add_to_wishlist: Add to Wishlist
+        add_to_wishlist: Add to Wishlist test
         image: Image
         name: Name
         created_at: Created At

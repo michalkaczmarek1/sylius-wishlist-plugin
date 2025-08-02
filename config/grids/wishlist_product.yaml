@@ -38,7 +38,7 @@ sylius_grid:
                 search:
                     type: string
                     options:
-                        fields: [ wishlist, productVariant ]
+                        fields: [ productVariant.product.translations.name ]
                 createdAt:
                     type: date
                     options:

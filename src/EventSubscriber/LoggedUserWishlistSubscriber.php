@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SyliusAcademy\WishlistPlugin\EventSubscriber;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Sylius\Bundle\CoreBundle\SectionResolver\SectionProviderInterface;
 use Sylius\Bundle\ShopBundle\SectionResolver\ShopSection;
 use Sylius\Bundle\UserBundle\Event\UserEvent;
@@ -12,6 +13,7 @@ use Sylius\Bundle\UserBundle\UserEvents;
 use Sylius\Component\Core\Model\ShopUserInterface;
 use SyliusAcademy\WishlistPlugin\Provider\WishlistProviderInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\Security\Http\SecurityEvents;
 
 final readonly class LoggedUserWishlistSubscriber implements EventSubscriberInterface
@@ -32,7 +34,7 @@ final readonly class LoggedUserWishlistSubscriber implements EventSubscriberInte
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function onImplicitLogin(UserEvent $event): void
     {
@@ -49,16 +51,16 @@ final readonly class LoggedUserWishlistSubscriber implements EventSubscriberInte
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function onInteractiveLogin(UserEvent $userEvent): void
+    public function onInteractiveLogin(InteractiveLoginEvent $userEvent): void
     {
         $section = $this->uriBasedSectionContext->getSection();
         if (!$section instanceof ShopSection) {
             return;
         }
 
-        $user = $userEvent->getUser();
+        $user = $userEvent->getAuthenticationToken()->getUser();
         if (!$user instanceof ShopUserInterface) {
             return;
         }
@@ -67,7 +69,7 @@ final readonly class LoggedUserWishlistSubscriber implements EventSubscriberInte
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function saveWishlistsForLoggedUser(ShopUserInterface $user): void
     {
